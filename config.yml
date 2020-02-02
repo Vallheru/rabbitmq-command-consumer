@@ -2,6 +2,7 @@ resources:
   exchanges:
     - name: sphinx_indexer_exchange
       type: direct
+      durable: true
       auto_deleted: false
       internal: false
       no_wait: false

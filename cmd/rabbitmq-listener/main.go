@@ -1,21 +1,11 @@
 package main
 
 import (
-	"fmt"
+	// "fmt"
+	// "os"
 	"io/ioutil"
+	"github.com/streadway/amqp"
 )
-
-/**
-
-
-// func failOnError(err error, msg string) {
-// 	if err != nil {
-// 		log.Fatalf("%s: %s", msg, err)
-// 	}
-// }
-
- */
-
 
 func main() {
 	data, err := ioutil.ReadFile("./config.yml")
@@ -23,6 +13,22 @@ func main() {
 		panic(err)
 	}
 	content := string(data)
+
+	forever := make(chan bool)
 	
-	fmt.Println(parseConfigString(&content))
+	config, err := parseConfigString(&content)
+
+	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	defer conn.Close()
+
+	exchangeListener := RabbitMQExchangeListener{
+		connection: conn,
+		config: &config,
+	}
+	exchangeListener.Init()
+	exchangeListener.DeclareResources()
+	exchangeListener.Listen()
+	defer exchangeListener.Destroy()
+
+	<-forever
 }

@@ -19,8 +19,10 @@ type Resources struct {
 }
 
 type Resource struct {
+	Category string
 	Name string				`yaml:"name"`
 	ResourceType string		`yaml:"type"`
+	Durable bool			`yaml:"durable"`
 	AutoDeleted bool		`yaml:"auto_deleted"`
 	Internal bool			`yaml:"internal"`
 	NoWait bool				`yaml:"no_wait"`
@@ -42,6 +44,7 @@ func parseConfigString(configContent *string) (Config, error) {
 func (container *Config) GetResource(name string) (Resource, error) {
 	for _, item := range container.Resources.Exchanges {
 		if item.Name == name {
+			item.Category = RESOURCE_EXCHANGE
 			return item, nil
 		}
 	}

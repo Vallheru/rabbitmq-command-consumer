@@ -9,7 +9,8 @@ var validData string = `
 resources:
   exchanges:
     - name: sphinx_indexer_exchange
-      type: direct
+	  type: direct
+	  durable: true
       auto_deleted: false
       internal: false
       no_wait: false
@@ -83,6 +84,7 @@ func TestParseConfigStringValidData(t *testing.T) {
 				{
 					Name: "sphinx_indexer_exchange",
 					ResourceType: "direct",
+					Durable: true,
 					AutoDeleted: false,
 					Internal: false,
 					NoWait: false,
