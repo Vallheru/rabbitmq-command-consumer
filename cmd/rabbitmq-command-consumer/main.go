@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"io/ioutil"
 	"github.com/streadway/amqp"
 )
@@ -10,6 +11,9 @@ var (
 )
 
 func main() {
+	configPath := flag.String("config", "/etc/rabbitmq-command-consumer.yml", "Path to the config file")
+	flag.Parse()
+	
 	var (
 		data []byte
 		err error
@@ -18,7 +22,7 @@ func main() {
 		zapLogger *ZapLogger
 	)
 
-	data, err = ioutil.ReadFile("./config.yml")
+	data, err = ioutil.ReadFile(*configPath)
 	if err != nil {
 		panic(err)
 	}

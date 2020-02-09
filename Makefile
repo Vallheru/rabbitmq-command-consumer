@@ -1,4 +1,4 @@
-PROJECT_NAME = rabbitmq-listener
+PROJECT_NAME = rabbitmq-command-consumer
 
 build : dependencies lint compile
 	
