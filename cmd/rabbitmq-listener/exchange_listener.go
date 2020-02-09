@@ -47,7 +47,7 @@ func (v *RabbitMQExchangeListener) DeclareResources() error {
 }
 
 
-func (v *RabbitMQExchangeListener) Listen() error {
+func (v *RabbitMQExchangeListener) Listen(config *Config) error {
 	for commandKey, item := range v.config.Commands {
 		resource, err := v.config.GetResource(item.Resource)
 
@@ -104,9 +104,31 @@ func (v *RabbitMQExchangeListener) Listen() error {
 		}
 
 		go func(commandKey string, msgs <-chan amqp.Delivery) {
+			var cmdExec *CommandExec
+
 			fmt.Printf(" [%s] Start listening\n", commandKey)
 			for d := range msgs {
-					fmt.Printf(" [x][%s] %s\n", commandKey, d.Body)
+				fmt.Printf(" [x][%s] %s\n", commandKey, d.Body)
+				cmd, err := config.GetCommand(commandKey)
+				
+				if err != nil {
+					break
+				}
+
+				if cmd.CommandPre != "" {
+					cmdExec, _ = PrepareCommand(cmd.CommandPre, logger)
+					cmdExec.Execute()
+				}
+				
+				if cmd.Command != "" {
+					cmdExec, _ = PrepareCommand(cmd.Command, logger)
+					cmdExec.Execute()
+				}
+
+				if cmd.CommandPost != "" {
+					cmdExec, _ = PrepareCommand(cmd.CommandPost, logger)
+					cmdExec.Execute()
+				}
 			}
 			fmt.Printf(" [%s] Stop listening\n", commandKey)
 		}(commandKey, msgs)

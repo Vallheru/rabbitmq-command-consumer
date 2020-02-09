@@ -57,6 +57,15 @@ func (container *Config) GetResource(name string) (Resource, error) {
 	return Resource{}, fmt.Errorf("Resource with name %s does not exist in configuration", name)
 }
 
+func (container *Config) GetCommand(name string) (*Command, error) {
+	item, ok := container.Commands[name];
+	if !ok {
+		return nil, fmt.Errorf("Command %s does not exist", name)
+	}
+
+	return &item, nil
+}
+
 func (container *Config) Validate() (bool, error) {
 	for key, item := range container.Commands {
 		_, err := container.GetResource(item.Resource)

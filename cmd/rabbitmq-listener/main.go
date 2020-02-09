@@ -53,9 +53,8 @@ func main() {
 	}
 	exchangeListener.Init()
 	exchangeListener.DeclareResources()
-	exchangeListener.Listen()
+	exchangeListener.Listen(&config)
 	defer exchangeListener.Destroy()
-	cmd, _ := PrepareCommand("echo 'daniel'")
-	cmd.Execute()
+	
 	<-forever
 }
