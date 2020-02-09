@@ -28,9 +28,14 @@ type Resource struct {
 	NoWait bool				`yaml:"no_wait"`
 }
 
+type ProgramConfig struct {
+	LogFilePath	string		`yaml:"log_file_path"`
+}
+
 type Config struct {
 	Resources Resources				`yaml:"resources"`
 	Commands map[string]Command		`yaml:"commands"`
+	Program ProgramConfig			`yaml:"program"`
 }
 
 func parseConfigString(configContent *string) (Config, error) {

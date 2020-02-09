@@ -6,11 +6,13 @@ import (
 )
 
 var validData string = `
+program:
+  log_file_path: ./output.log
 resources:
   exchanges:
     - name: sphinx_indexer_exchange
-	  type: direct
-	  durable: true
+      type: direct
+      durable: true
       auto_deleted: false
       internal: false
       no_wait: false
@@ -52,33 +54,13 @@ commands:
     command_post: echo "product_variant_main post"
 `
 
-func TestInfrastructureValidation(t *testing.T) {
-	testTable := []struct{
-		data string
-		isValid bool
-		expectedError string
-	}{
-		{validData, 	true,  ""},
-		{invalidData,	false, "sphinx_indexer_exchange is defined for product_variant_main"},
-	}
-
-	for _, item := range testTable {
-		result, _ := parseConfigString(&item.data)
-
-		validationResult, err := result.Validate()
-
-		assert.Equal(t, item.isValid, validationResult)
-		if item.expectedError != "" {
-			assert.Contains(t, err.Error(), item.expectedError)
-		}
-	}
-}
-
 func TestParseConfigStringValidData(t *testing.T) {
 
 	result, err := parseConfigString(&validData)
-
 	expected := Config{
+		Program: ProgramConfig{
+			LogFilePath: "./output.log",
+		},
 		Resources: Resources{
 			Exchanges: []Resource{
 				{
@@ -120,6 +102,28 @@ func TestParseConfigStringValidData(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestInfrastructureValidation(t *testing.T) {
+	testTable := []struct{
+		data string
+		isValid bool
+		expectedError string
+	}{
+		{validData, 	true,  ""},
+		{invalidData,	false, "sphinx_indexer_exchange is defined for product_variant_main"},
+	}
+
+	for _, item := range testTable {
+		result, _ := parseConfigString(&item.data)
+
+		validationResult, err := result.Validate()
+
+		assert.Equal(t, item.isValid, validationResult)
+		if item.expectedError != "" {
+			assert.Contains(t, err.Error(), item.expectedError)
+		}
+	}
+}
+
 func TestGetResource(t *testing.T) {
 	testTable := []struct {
 		data string
@@ -131,9 +135,11 @@ func TestGetResource(t *testing.T) {
 			validData,
 			"sphinx_indexer_exchange",
 			Resource{
+				Category: RESOURCE_EXCHANGE,
 				Name: "sphinx_indexer_exchange",
 				ResourceType: "direct",
 				AutoDeleted: false,
+				Durable: true,
 				Internal: false,
 				NoWait: false,
 			},

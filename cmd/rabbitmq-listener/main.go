@@ -1,23 +1,49 @@
 package main
 
 import (
-	// "fmt"
-	// "os"
 	"io/ioutil"
 	"github.com/streadway/amqp"
+	"go.uber.org/zap"
+)
+
+func newLogger(path string) (*zap.Logger, error) {
+	cfg := zap.NewProductionConfig()
+	
+	if path != "" {
+		cfg.OutputPaths = []string{
+			path,
+		}
+	}
+	return cfg.Build()
+}
+
+var (
+	logger *zap.Logger
 )
 
 func main() {
-	data, err := ioutil.ReadFile("./config.yml")
+	var (
+		data []byte
+		err error
+		config Config
+		content string
+	)
+
+	data, err = ioutil.ReadFile("./config.yml")
 	if err != nil {
 		panic(err)
 	}
-	content := string(data)
+	content = string(data)	
+	config, err = parseConfigString(&content)
+
+	
+	logger, err = newLogger(config.Program.LogFilePath)
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
 
 	forever := make(chan bool)
-	
-	config, err := parseConfigString(&content)
-
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	defer conn.Close()
 
@@ -29,6 +55,7 @@ func main() {
 	exchangeListener.DeclareResources()
 	exchangeListener.Listen()
 	defer exchangeListener.Destroy()
-
+	cmd, _ := PrepareCommand("echo 'daniel'")
+	cmd.Execute()
 	<-forever
 }
