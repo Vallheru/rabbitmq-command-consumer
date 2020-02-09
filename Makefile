@@ -6,7 +6,7 @@ compile :
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/$(PROJECT_NAME) ./cmd/$(PROJECT_NAME)
 	
 run :
-	go run ./cmd/$(PROJECT_NAME)
+	go run ./cmd/$(PROJECT_NAME) -config ./config.yml
 
 test : lint compile
 	go test -v ./cmd/$(PROJECT_NAME)/

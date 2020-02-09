@@ -20,6 +20,14 @@ type Resources struct {
 	Exchanges []Resource	`yaml:"exchanges"`
 }
 
+// RabbitMQConfig ...
+type RabbitMQConfig struct {
+	User string		`yaml:"user"` 
+	Pass string		`yaml:"pass"` 
+	Host string		`yaml:"host"` 
+	Port string		`yaml:"port"` 
+}
+
 // Resource ...
 type Resource struct {
 	Category string
@@ -38,6 +46,7 @@ type ProgramConfig struct {
 
 // Config ...
 type Config struct {
+	RabbitMQ RabbitMQConfig			`yaml:"rabbitmq"`
 	Resources Resources				`yaml:"resources"`
 	Commands map[string]Command		`yaml:"commands"`
 	Program ProgramConfig			`yaml:"program"`

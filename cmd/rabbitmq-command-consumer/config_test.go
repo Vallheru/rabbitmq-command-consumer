@@ -8,6 +8,11 @@ import (
 var validData string = `
 program:
   log_file_path: ./output.log
+rabbitmq:
+  user: guest
+  pass: guest
+  host: localhost
+  port: 15672
 resources:
   exchanges:
     - name: sphinx_indexer_exchange
@@ -60,6 +65,12 @@ func TestParseConfigStringValidData(t *testing.T) {
 	expected := Config{
 		Program: ProgramConfig{
 			LogFilePath: "./output.log",
+		},
+		RabbitMQ: RabbitMQConfig{
+			User: "guest",
+			Pass: "guest",
+			Host: "localhost",
+			Port: "15672",
 		},
 		Resources: Resources{
 			Exchanges: []Resource{

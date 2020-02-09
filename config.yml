@@ -1,6 +1,12 @@
 # program:
 #   log_file_path: ./output.log
 
+rabbitmq:
+  user: $RABBITMQ_USER
+  pass: $RABBITMQ_PASS
+  host: $RABBITMQ_HOST
+  port: ${RABBITMQ_PORT}
+
 
 resources:
   exchanges:
@@ -16,10 +22,9 @@ commands:
   product_variant_main:
     resource: sphinx_indexer_exchange
     routing_key: product_variant_main
-    command_pre: |
-      echo "Dnaiel"; sleep 10;
-      echo "product_variant_main pre" && sleep 20;
-    command: echo "product_variant_main command"
+    command_pre: echo "product_variant_main pre"
+    command: |
+      /opt/sphinx/sphinx-3.1.1/bin/indexer --config $SPHINX_CONFIG_PATH --rotate product_variant_main
     command_post: echo "product_variant_main post"
 
 
@@ -27,7 +32,8 @@ commands:
     resource: sphinx_indexer_exchange
     routing_key: product_admin
     command_pre: echo "product_admin pre"
-    command: echo "product_admin command"
+    command: |
+      /opt/sphinx/sphinx-3.1.1/bin/indexer --config $SPHINX_CONFIG_PATH --rotate product_admin
     command_post: echo "product_admin post"
 
 
@@ -35,5 +41,6 @@ commands:
     resource: sphinx_indexer_exchange
     routing_key: product_variant_admin_inch
     command_pre: echo "product_variant_admin_inch pre"
-    command: echo "product_variant_admin_inch command"
+    command: |
+      /opt/sphinx/sphinx-3.1.1/bin/indexer --config $SPHINX_CONFIG_PATH --rotate product_variant_admin_inch
     command_post: echo "product_variant_admin_inch post"
