@@ -6,6 +6,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// RabbitMQExchangeListener ...
 type RabbitMQExchangeListener struct {
 	RabbitMQListener
 	connection *amqp.Connection
@@ -13,12 +14,14 @@ type RabbitMQExchangeListener struct {
 	channels map[string]*amqp.Channel
 }
 
+// Init ...
 func (v *RabbitMQExchangeListener) Init() error {
 	v.channels = map[string]*amqp.Channel{}
 
 	return nil
 }
 
+// DeclareResources ...
 func (v *RabbitMQExchangeListener) DeclareResources() error {
 	for _, item := range v.config.Resources.Exchanges {
 		ch, err := v.connection.Channel()
@@ -46,7 +49,7 @@ func (v *RabbitMQExchangeListener) DeclareResources() error {
 	return nil
 }
 
-
+// Listen ...
 func (v *RabbitMQExchangeListener) Listen(config *Config) error {
 	for commandKey, item := range v.config.Commands {
 		resource, err := v.config.GetResource(item.Resource)
@@ -61,7 +64,7 @@ func (v *RabbitMQExchangeListener) Listen(config *Config) error {
 			return fmt.Errorf("Channel for %s does not exists", item.Resource)
 		}
 
-		if resource.Category != RESOURCE_EXCHANGE {
+		if resource.Category != ResourceExchange {
 			continue
 		}
 
@@ -103,40 +106,15 @@ func (v *RabbitMQExchangeListener) Listen(config *Config) error {
 			return err
 		}
 
-		go func(commandKey string, msgs <-chan amqp.Delivery) {
-			var cmdExec *CommandExec
-
-			fmt.Printf(" [%s] Start listening\n", commandKey)
-			for d := range msgs {
-				fmt.Printf(" [x][%s] %s\n", commandKey, d.Body)
-				cmd, err := config.GetCommand(commandKey)
-				
-				if err != nil {
-					break
-				}
-
-				if cmd.CommandPre != "" {
-					cmdExec, _ = PrepareCommand(cmd.CommandPre, logger)
-					cmdExec.Execute()
-				}
-				
-				if cmd.Command != "" {
-					cmdExec, _ = PrepareCommand(cmd.Command, logger)
-					cmdExec.Execute()
-				}
-
-				if cmd.CommandPost != "" {
-					cmdExec, _ = PrepareCommand(cmd.CommandPost, logger)
-					cmdExec.Execute()
-				}
-			}
-			fmt.Printf(" [%s] Stop listening\n", commandKey)
-		}(commandKey, msgs)
+		cmd, err := config.GetCommand(commandKey)
+		logger.Info("consumer", "Start listening", "cmd", commandKey)
+		go consumeResource(cmd, msgs)
 	}
 
 	return nil
 }
 
+// Destroy ...
 func (v *RabbitMQExchangeListener) Destroy() error {
 	for _, item := range v.channels {
 		item.Close()

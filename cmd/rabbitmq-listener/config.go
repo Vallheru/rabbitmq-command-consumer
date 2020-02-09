@@ -6,6 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Command ...
 type Command struct {
 	Resource string			`yaml:"resource"`
 	RoutingKey string		`yaml:"routing_key"`
@@ -14,10 +15,12 @@ type Command struct {
 	CommandPost string		`yaml:"command_post"`
 }
 
+// Resources ...
 type Resources struct {
 	Exchanges []Resource	`yaml:"exchanges"`
 }
 
+// Resource ...
 type Resource struct {
 	Category string
 	Name string				`yaml:"name"`
@@ -28,10 +31,12 @@ type Resource struct {
 	NoWait bool				`yaml:"no_wait"`
 }
 
+// ProgramConfig ...
 type ProgramConfig struct {
 	LogFilePath	string		`yaml:"log_file_path"`
 }
 
+// Config ...
 type Config struct {
 	Resources Resources				`yaml:"resources"`
 	Commands map[string]Command		`yaml:"commands"`
@@ -46,10 +51,11 @@ func parseConfigString(configContent *string) (Config, error) {
 	return config, err
 }
 
+// GetResource ...
 func (container *Config) GetResource(name string) (Resource, error) {
 	for _, item := range container.Resources.Exchanges {
 		if item.Name == name {
-			item.Category = RESOURCE_EXCHANGE
+			item.Category = ResourceExchange
 			return item, nil
 		}
 	}
@@ -57,6 +63,7 @@ func (container *Config) GetResource(name string) (Resource, error) {
 	return Resource{}, fmt.Errorf("Resource with name %s does not exist in configuration", name)
 }
 
+// GetCommand ...
 func (container *Config) GetCommand(name string) (*Command, error) {
 	item, ok := container.Commands[name];
 	if !ok {
@@ -66,6 +73,7 @@ func (container *Config) GetCommand(name string) (*Command, error) {
 	return &item, nil
 }
 
+// Validate ...
 func (container *Config) Validate() (bool, error) {
 	for key, item := range container.Commands {
 		_, err := container.GetResource(item.Resource)

@@ -135,7 +135,7 @@ func TestGetResource(t *testing.T) {
 			validData,
 			"sphinx_indexer_exchange",
 			Resource{
-				Category: RESOURCE_EXCHANGE,
+				Category: ResourceExchange,
 				Name: "sphinx_indexer_exchange",
 				ResourceType: "direct",
 				AutoDeleted: false,

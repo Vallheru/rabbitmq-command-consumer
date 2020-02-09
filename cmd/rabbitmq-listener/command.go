@@ -6,16 +6,20 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
+// The CommandExec keeps pieces of information about command that is
+// being executed in the system. During the execution, a few entries 
+// are created in the logs file. To connect all rows struct keeps and 
+// adds the ID field.
 type CommandExec struct {
 	id uint32
 	command string
-	logger *zap.Logger
+	logger *Logger
 }
 
-func PrepareCommand(cmdStr string, logger *zap.Logger) (*CommandExec, error) {
+// PrepareCommand creates the CommandExec structure.
+func PrepareCommand(cmdStr string, logger *Logger) (*CommandExec, error) {
 	id, err := uuid.NewUUID()
     if err !=nil {
         return nil, errors.New("Cannot generat UUID")
@@ -30,6 +34,7 @@ func PrepareCommand(cmdStr string, logger *zap.Logger) (*CommandExec, error) {
 	return &cmd, nil
 }
 
+// Log function is used to create Info entry in the log file
 func (cmd *CommandExec) Log(message string, args ...interface{}) {
 	params := []interface{}{
 		"command_id", cmd.id,
@@ -37,12 +42,13 @@ func (cmd *CommandExec) Log(message string, args ...interface{}) {
 	}
 	params = append(params, args...)
 
-	cmd.logger.Sugar().Infow("[ CommandExec ] " + message, 
-		params... ,
+	(*cmd.logger).Info("CommandExec", message, 
+		params...,
 	)
 }
 
-func (cmd *CommandExec) Execute() (error, string, string) {	
+// Execute function executes given command.
+func (cmd *CommandExec) Execute() (string, string, error) {	
 	cmd.Log("Start")
 	
 	
@@ -53,8 +59,8 @@ func (cmd *CommandExec) Execute() (error, string, string) {
     cmdExec.Stderr = &stderr
 	err := cmdExec.Start()
 	if err != nil {
-		cmd.Log("ERROR", "error_msg", err.Error())
-		return err, "", ""
+		(*cmd.logger).Error("ERROR", "error_msg", err.Error())
+		return "", "", err
 	}
 	cmd.Log("Waiting to finish")
 	err = cmdExec.Wait()
@@ -63,5 +69,5 @@ func (cmd *CommandExec) Execute() (error, string, string) {
 		"stdout", stdout.String(),
 		"stderr", stderr.String(),
 	)
-	return nil, stdout.String(), stderr.String()
+	return stdout.String(), stderr.String(), err
 }

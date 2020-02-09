@@ -3,22 +3,10 @@ package main
 import (
 	"io/ioutil"
 	"github.com/streadway/amqp"
-	"go.uber.org/zap"
 )
 
-func newLogger(path string) (*zap.Logger, error) {
-	cfg := zap.NewProductionConfig()
-	
-	if path != "" {
-		cfg.OutputPaths = []string{
-			path,
-		}
-	}
-	return cfg.Build()
-}
-
 var (
-	logger *zap.Logger
+	logger Logger
 )
 
 func main() {
@@ -27,6 +15,7 @@ func main() {
 		err error
 		config Config
 		content string
+		zapLogger *ZapLogger
 	)
 
 	data, err = ioutil.ReadFile("./config.yml")
@@ -35,13 +24,14 @@ func main() {
 	}
 	content = string(data)	
 	config, err = parseConfigString(&content)
-
 	
-	logger, err = newLogger(config.Program.LogFilePath)
+	zapLogger, err = NewZapLogger(config.Program.LogFilePath)
+	logger = zapLogger
+
 	if err != nil {
 		panic(err)
 	}
-	defer logger.Sync()
+	defer logger.Destroy()
 
 	forever := make(chan bool)
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
